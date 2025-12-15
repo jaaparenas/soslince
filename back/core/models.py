@@ -1,0 +1,47 @@
+from django.db import models
+from django.contrib.auth import get_user_model
+
+class Staff(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    image = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return "%s" % self.user.first_name + " " + self.user.last_name
+
+
+class Customer(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    phone = models.CharField(max_length=255, blank=True, null=True)
+    image = models.CharField(max_length=255, blank=True, null=True)
+    blood_type = models.CharField(max_length=255, blank=True, null=True)
+    company = models.CharField(max_length=255, blank=True, null=True)
+    birth_date = models.DateField(blank=True, null=True)
+    secret_word = models.CharField(max_length=255, blank=True, null=True)
+    details = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return "%s" % self.user.first_name + " " + self.user.last_name
+
+
+class CustomerLocation(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+
+    def __str__(self):
+        return "%s" % str(self.timestamp) + " | " + self.customer.user.first_name + " " + self.customer.user.last_name
+
+
+class CustomerSOS(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    key = models.CharField(max_length=255, blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+    status =  models.SmallIntegerField(blank=True, null=True)
+    details = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return "%s" % self.customer.user.first_name + " " + self.customer.user.last_name

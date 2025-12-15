@@ -1,0 +1,100 @@
+# ====================
+# OS & Editor
+# ====================
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ====================
+# Python / Django (back/)
+# ====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ENV/
+
+# Django
+back/staticfiles/
+back/static/
+back/media/
+*.sqlite3
+db.sqlite3
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ====================
+# Node.js (front/ & movil/)
+# ====================
+node_modules/
+npm-debug.log*
+yarn-error.log
+yarn-debug.log*
+.pnpm-debug.log*
+
+# Lock files (uncomment if you want to track them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ====================
+# Vue / Vite Build
+# ====================
+dist/
+.vite/
+*.local
+
+# ====================
+# Environment Variables
+# ====================
+.env
+.env.*
+!.env.example
+
+# ====================
+# Capacitor / Mobile (movil/)
+# ====================
+
+# Android
+movil/android/.gradle/
+movil/android/app/build/
+movil/android/build/
+movil/android/capacitor-cordova-android-plugins/build/
+movil/android/local.properties
+movil/android/*.iml
+movil/android/.idea/
+
+# iOS
+movil/ios/Pods/
+movil/ios/.symlinks/
+movil/ios/App/Podfile.lock
+movil/ios/DerivedData/
+movil/ios/*.xcworkspace/xcuserdata/
+movil/ios/*.xcodeproj/xcuserdata/
+movil/ios/*.xcodeproj/project.xcworkspace/xcshareddata/
+
+# ====================
+# Testing & Coverage
+# ====================
+coverage/
+.nyc_output/
+
+# ====================
+# Misc
+# ====================
+*.bak
+*.swp
+*.swo
+*~
