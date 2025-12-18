@@ -70,6 +70,12 @@ const itemsMenu = [
       title: "modules.core.customer",
       icon: "mdi-account-heart",
       url: "/core/customer",
+    },
+    {
+      title: "modules.core.companies",
+      icon: "mdi-domain",
+      url: "/core/company",
+      roles: [IS_ADMIN],
     }]
   },
 ];

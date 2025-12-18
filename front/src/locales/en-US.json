@@ -93,7 +93,8 @@
       "attended_successfully": "Attended successfully",
       "active": "Active",
       "date_filter": "Date filter",
-      "attended": "Attended"
+      "attended": "Attended",
+      "nit": "NIT"
     },
     "language": {
       "language": "Idioma",
@@ -191,7 +192,10 @@
       "new_staff": "New staff",
       "history_location": "Location History",
       "history_sos_alert": "SOS alert History",
-      "active_sos_alert": "Active SOS alert"
+      "active_sos_alert": "Active SOS alert",
+      "companies": "Companies",
+      "new_company": "New company",
+      "company": "Company"
     },
     "portal": {
       "portal": "Portal",

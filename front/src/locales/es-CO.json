@@ -93,7 +93,8 @@
       "attended_successfully": "Atendida correctamente",
       "active": "Activo",
       "date_filter": "Filtro de fecha",
-      "attended": "Atendido"
+      "attended": "Atendido",
+      "nit": "NIT"
     },
     "language": {
       "language": "Idioma",
@@ -191,7 +192,10 @@
       "new_staff": "Nuevo personal",
       "history_location": "Historial de ubicaciones",
       "history_sos_alert": "Historial de alertas de SOS",
-      "active_sos_alert": "Alertas de SOS activas"
+      "active_sos_alert": "Alertas de SOS activas",
+      "companies": "Empresas",
+      "new_company": "Nueva empresa",
+      "company": "Empresa"
     },
     "portal": {
       "portal": "Portal",

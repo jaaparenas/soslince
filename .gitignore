@@ -98,3 +98,6 @@ coverage/
 *.swp
 *.swo
 *~
+
+# Gemini CLI
+GEMINI.md

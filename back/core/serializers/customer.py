@@ -6,6 +6,7 @@ from core.models import Customer
 
 class CustomerInfoSerializer(BaseImageMixin, serializers.ModelSerializer):
     url_image = BaseImageMixin.url_image
+    company_name = serializers.CharField(source='company.name', read_only=True, allow_null=True)
 
     class Meta:
         model = Customer

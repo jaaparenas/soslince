@@ -7,11 +7,13 @@ from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 
 from core.models import Customer, CustomerLocation, CustomerSOS
 from core.serializers.customer import CustomerSerializer
 from core.serializers.customerLocation import CustomerLocationSerializer
 from core.serializers.customerSOS import CustomerSosSerializer, CustomerSosPendingSerializer
+from core.filters import CustomSearchFilter
 
 from soslince.excel_serializer import ExcelSerializer
 class IsSuperUser(BasePermission):
@@ -26,6 +28,9 @@ class CustomerViewSet (viewsets.ModelViewSet):
 
     permission_classes = [IsStaffUser]
     serializer_class = CustomerSerializer
+    filter_backends = [DjangoFilterBackend, CustomSearchFilter]
+    filterset_fields = ['customer__company']
+    search_fields = ['first_name', 'last_name']
 
     def get_queryset(self):
         return get_user_model().objects.filter(is_staff=False).all()

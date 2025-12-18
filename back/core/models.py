@@ -15,7 +15,7 @@ class Customer(models.Model):
     phone = models.CharField(max_length=255, blank=True, null=True)
     image = models.CharField(max_length=255, blank=True, null=True)
     blood_type = models.CharField(max_length=255, blank=True, null=True)
-    company = models.CharField(max_length=255, blank=True, null=True)
+    company = models.ForeignKey('Company', on_delete=models.SET_NULL, null=True, blank=True)
     birth_date = models.DateField(blank=True, null=True)
     secret_word = models.CharField(max_length=255, blank=True, null=True)
     details = models.TextField(blank=True, null=True)
@@ -45,3 +45,19 @@ class CustomerSOS(models.Model):
 
     def __str__(self):
         return "%s" % self.customer.user.first_name + " " + self.customer.user.last_name
+
+
+class Company(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=255, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    NIT = models.CharField(max_length=255, blank=True, null=True) # Assuming NIT is a string
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Company"
+        verbose_name_plural = "Companies"
+
+    def __str__(self):
+        return self.name

@@ -13,14 +13,26 @@
             { title: 'modules.core.history_sos_alert', action: 'sos', icon: 'mdi-bell' },
             { title: 'modules.core.history_location', action: 'locations', icon: 'mdi-map-marker' },
           ]"
-          :menuItems="['edit', 'password', 'sos', 'locations']"
+          :menuItems="['edit', 'delete', 'password', 'sos', 'locations']"
           :labelNew="'modules.core.new_customer'"
-          :showFilters="false"
+          :showFilters="true"
           @onClickNew="clickNew"
           @onClickEdit="clickEdit"
           @onClickDelete="clickDelete"
           @onClickAction="clickAction"
+          :extraParameters="extraParams"
         >
+          <template #extra-filters>
+            <v-select
+              v-model="selectedCompany"
+              :items="companies"
+              item-title="name"
+              item-value="id"
+              :label="$t('commons.common.company')"
+              clearable
+              hide-details
+            ></v-select>
+          </template>
           <template #item.name="{ item }">
             {{ item.first_name }} {{ item.last_name }}
           </template>
@@ -36,7 +48,7 @@
             {{ item.customer_info.phone }}
           </template>
           <template #item.company="{ item }">
-            {{ item.customer_info.company }}
+            {{ item.customer_info.company_name }}
           </template>
         </exp-data-table>
       </v-card-text>
@@ -101,6 +113,16 @@
   >
     <expPassword v-model="passwordData" />
   </exp-modal-form>
+  <exp-modal-form
+    v-if="deleteModal"
+    v-model="deleteModal"
+    :title="$t('commons.forms.are_sure')"
+    :btnSaveText="$t('commons.forms.delete')"
+    @fnSave="confirmDelete"
+    size="400"
+  >
+    <p>{{ $t('commons.common.confirm_delete') }} <strong>{{ itemToDelete.first_name }}</strong>?</p>
+  </exp-modal-form>
 </template>
 
 <script lang="ts" setup>
@@ -127,6 +149,7 @@ import historySos from "../components/history_sos.vue";
 import useCustomer from "../composables/useCustomer";
 
 const uCrud = useCrud(`${endpoint}/customer`);
+const companyCrud = useCrud(`${endpoint}/company`);
 const { t } = useI18n();
 const uUtils = useUtils();
 const uCustomer = useCustomer();
@@ -155,6 +178,20 @@ const formModalLocation = ref(false);
 const userId = ref(0);
 const formModal = ref(false);
 const passwordModal = ref(false);
+const deleteModal = ref(false);
+const itemToDelete = ref();
+const companies = ref([]);
+const selectedCompany = ref(null);
+const companyItems = ref([]);
+
+const extraParams = computed(() => {
+  const params = {};
+  if (selectedCompany.value) {
+    params['customer__company'] = selectedCompany.value;
+  }
+  return params;
+});
+
 const formDataDefault = {
   is_active: false,
   first_name: "",
@@ -182,7 +219,7 @@ const listBloodType = [
 ];
 const formData = ref({ id: null, ...formDataDefault });
 const passwordData = ref();
-const formSchema = [
+const formSchema = computed(() => [
   { key: "is_active", type: "switch", title: t("modules.auth.active"), required: true },
   { key: "first_name", type: "text", col:"md-6", title: t("modules.auth.first_name"), required: true },
   { key: "last_name", type: "text", col:"md-6", title: t("modules.auth.last_name"), required: true },
@@ -190,10 +227,10 @@ const formSchema = [
   { key: "phone", type: "phone", col:"md-6", title: t("commons.common.phone"), required: true },
   { key: "birth_date", type: "date", col:"md-6", title: t("commons.common.birth_date"), required: true },
   { key: "blood_type", type: "select", items: listBloodType, col:"md-6", title: t("commons.common.blood_type"), required: true },
-  { key: "company", type: "text", title: t("commons.common.company"), required: true },
+  { key: "company", type: "select", items: companyItems.value, col:"md-6", title: t("commons.common.company"), required: true },
   { key: "secret_word", type: "text", title: t("commons.common.secret_word"), required: true },
   { key: "details", type: "editor", title: t("commons.common.details"), required: true },
-];
+]);
 const rules = {
   first_name: { required, minLength: minLength(2) },
   last_name: { required, minLength: minLength(2) },
@@ -203,12 +240,17 @@ const validate = useVuelidate(rules, formData);
 
 const formSchemaCalculated = computed(() => {
   if ((formData.value as any)?.id != null) {
-    return formSchema.filter((item: any) => item.key != 'email');
+    return formSchema.value.filter((item: any) => item.key != 'email');
   }
-  return formSchema;
+  return formSchema.value;
 });
 
-onMounted(async () => {});
+onMounted(async () => {
+  companyCrud.list().then((resp: any) => {
+    companies.value = resp;
+    companyItems.value = resp.map((c: any) => ({ id: c.id, label: c.name }));
+  });
+});
 
 const isAdmin = computed(() => {
   try {
@@ -252,6 +294,9 @@ const saveBooking = async () => {
 
 const clickNew = () => {
   formData.value = { id: null, ...formDataDefault };
+  if (selectedCompany.value) {
+    formData.value.company = selectedCompany.value;
+  }
   formModal.value = true;
 };
 
@@ -271,7 +316,15 @@ const clickEdit = async (item: any) => {
 };
 
 const clickDelete = (item: any) => {
-  console.log(item);
+  itemToDelete.value = item;
+  deleteModal.value = true;
+};
+
+const confirmDelete = () => {
+  uCrud.remove(itemToDelete.value.id).then(() => {
+    drawRefresh.value = uUtils.createUUID();
+    deleteModal.value = false;
+  })
 };
 
 const clickAction = (item: any, action: string) => {
