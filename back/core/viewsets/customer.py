@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 
 from core.models import Customer, CustomerLocation, CustomerSOS
-from core.serializers.customer import CustomerSerializer
+from core.serializers.customer import CustomerSerializer, MinimalCustomerSerializer
 from core.serializers.customerLocation import CustomerLocationSerializer
 from core.serializers.customerSOS import CustomerSosSerializer, CustomerSosPendingSerializer
 from core.filters import CustomSearchFilter
@@ -29,7 +29,7 @@ class CustomerViewSet (viewsets.ModelViewSet):
     permission_classes = [IsStaffUser]
     serializer_class = CustomerSerializer
     filter_backends = [DjangoFilterBackend, CustomSearchFilter]
-    filterset_fields = ['customer__company']
+    filterset_fields = ['customer__company', 'customer__gender']
     search_fields = ['first_name', 'last_name']
 
     def get_queryset(self):
@@ -119,6 +119,69 @@ class CustomerViewSet (viewsets.ModelViewSet):
         locations = CustomerSOS.objects.exclude(status=1).select_related('customer__user').order_by('id').all()
         serializer = CustomerSosPendingSerializer(locations, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='last_locations')
+    def last_locations(self, request, *args, **kwargs):
+        # 1. Start with all active customers
+        customers = Customer.objects.filter(user__is_active=True)
+
+        # 2. Apply filters to customers
+        customer_filters = {}
+        
+        company_ids_str = request.query_params.get('customer__company__in')
+        if company_ids_str:
+            customer_filters['company__id__in'] = [int(x) for x in company_ids_str.split(',')]
+        
+        gender_ids_str = request.query_params.get('customer__customer_info__gender__in')
+        if gender_ids_str:
+            customer_filters['gender__in'] = gender_ids_str.split(',')
+            
+        blood_type_ids_str = request.query_params.get('customer__customer_info__blood_type__in')
+        if blood_type_ids_str:
+            customer_filters['blood_type__in'] = blood_type_ids_str.split(',')
+            
+        birth_date_gte_str = request.query_params.get('customer__customer_info__birth_date__gte')
+        if birth_date_gte_str:
+            customer_filters['birth_date__gte'] = birth_date_gte_str
+            
+        birth_date_lte_str = request.query_params.get('customer__customer_info__birth_date__lte')
+        if birth_date_lte_str:
+            customer_filters['birth_date__lte'] = birth_date_lte_str
+
+        if customer_filters:
+            customers = customers.filter(**customer_filters)
+
+        # 3. Handle timestamp__range for locations
+        timestamp_range_str = request.query_params.get('timestamp__range')
+        location_filters = {}
+        if timestamp_range_str:
+            try:
+                start_date_str, end_date_str = timestamp_range_str.split(',')
+                # Ensure timezone awareness for comparison
+                start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
+                end_date = datetime.fromisoformat(end_date_str.replace('Z', '+00:00'))
+                location_filters['timestamp__range'] = (start_date, end_date)
+            except ValueError:
+                pass # Ignore invalid date range
+
+        customers_with_last_location = []
+
+        for customer in customers.select_related('company', 'user'):
+            # Get the last location for each customer, applying timestamp filter if present
+            last_location_queryset = CustomerLocation.objects.filter(customer=customer)
+            if location_filters:
+                last_location_queryset = last_location_queryset.filter(**location_filters)
+
+            last_location = last_location_queryset.order_by('-timestamp').first()
+
+            if last_location:
+                customers_with_last_location.append({
+                    'customer': MinimalCustomerSerializer(customer.user).data,
+                    'latitude': last_location.latitude,
+                    'longitude': last_location.longitude,
+                    'timestamp': last_location.timestamp
+                })
+        return Response(customers_with_last_location)
 
     @action(detail=False, methods=['post'], url_path='close_sos')
     def close_sos(self, request, *args, **kwargs):

@@ -1,128 +1,145 @@
 <template>
-  <v-container>
-    <h1 class="mb-4">{{ $t('modules.core.customers') }}</h1>
-    <v-card>
-      <v-card-text class="pa-0">
-        <exp-data-table
-          uuid="table-customer"
-          :endpoint="`${endpoint}/customer`"
-          :drawRefresh="drawRefresh"
-          :headers="headers"
-          :extraMenuItems="[
-            { title: 'modules.auth.password', action: 'password', icon: 'mdi-lock' },
-            { title: 'modules.core.history_sos_alert', action: 'sos', icon: 'mdi-bell' },
-            { title: 'modules.core.history_location', action: 'locations', icon: 'mdi-map-marker' },
-          ]"
-          :menuItems="['edit', 'delete', 'password', 'sos', 'locations']"
-          :labelNew="'modules.core.new_customer'"
-          :showFilters="true"
-          @onClickNew="clickNew"
-          @onClickEdit="clickEdit"
-          @onClickDelete="clickDelete"
-          @onClickAction="clickAction"
-          :extraParameters="extraParams"
-        >
-          <template #extra-filters>
-            <v-select
-              v-model="selectedCompany"
-              :items="companies"
-              item-title="name"
-              item-value="id"
-              :label="$t('commons.common.company')"
-              clearable
-              hide-details
-            ></v-select>
-          </template>
-          <template #item.name="{ item }">
-            {{ item.first_name }} {{ item.last_name }}
-          </template>
-          <template #item.image="{ item }">
-            <v-avatar size="40" variant="outlined">
-              <v-img :src="uUtils.getUrlImg(item.customer_info.image)" />
-            </v-avatar>
-          </template>
-          <template #item.birth_date="{ item }">
-            {{ item.customer_info.birth_date }}
-          </template>
-          <template #item.phone="{ item }">
-            {{ item.customer_info.phone }}
-          </template>
-          <template #item.company="{ item }">
-            {{ item.customer_info.company_name }}
-          </template>
-        </exp-data-table>
-      </v-card-text>
-    </v-card>
-  </v-container>
-  <exp-modal-form
-    :title="$t('modules.core.new_customer')"
-    :width="800"
-    v-model="formModal"
-    @fnSave="saveBooking"
-  >
-    <v-card-text>
-      <v-row>
-        <v-col cols="7">
-          <exp-dynamic-form
-            v-model="formData"
-            :schema="(formSchemaCalculated as any)"
-            :errors="validate.$errors"
-            variant="outlined"
-            density="compact"
-            hide-details="true"
-          >
-          </exp-dynamic-form>
-        </v-col>
-        <v-col cols="5">
-          <div>
-            <exp-crop
-              v-model="formData.url_image"
-              :width="300"
-              :height="300"
-            />
-          </div>
-          <div v-if="!((formData as any).id > 0)" class="mt-12">
-            <exp-password v-model="passwordData" />
-          </div>
-        </v-col>
-      </v-row>
-    </v-card-text>
-  </exp-modal-form>
-  <exp-modal-form
-    :title="$t('modules.core.history_sos_alert')"
-    :width="1100"
-    v-model="formModalSos"
-    :btn-save="false"
-  >
-    <history-sos :userId="userId" />
-  </exp-modal-form>
-  <exp-modal-form
-    :title="$t('modules.core.history_location')"
-    :width="1100"
-    v-model="formModalLocation"
-    :btn-save="false"
-  >
-    <history-locations :userId="userId" />
-  </exp-modal-form>
-  <exp-modal-form
-    :title="$t('modules.auth.password')"
-    :width="550"
-    v-model="passwordModal"
-    @fnSave="onUpdatePassword"
-    :btnSaveEnabled="!(passwordData?.valid !== true)"
-  >
-    <expPassword v-model="passwordData" />
-  </exp-modal-form>
-  <exp-modal-form
-    v-if="deleteModal"
-    v-model="deleteModal"
-    :title="$t('commons.forms.are_sure')"
-    :btnSaveText="$t('commons.forms.delete')"
-    @fnSave="confirmDelete"
-    size="400"
-  >
-    <p>{{ $t('commons.common.confirm_delete') }} <strong>{{ itemToDelete.first_name }}</strong>?</p>
-  </exp-modal-form>
+  <div>
+      <v-container>
+        <h1 class="mb-4">{{ $t('modules.core.customers') }}</h1>
+        <v-card>
+          <v-card-text class="pa-0">
+            <exp-data-table
+              uuid="table-customer"
+              :endpoint="`${endpoint}/customer`"
+              :drawRefresh="drawRefresh"
+              :headers="headers"
+              :extraMenuItems="[
+                { title: 'modules.auth.password', action: 'password', icon: 'mdi-lock' },
+                { title: 'modules.core.history_sos_alert', action: 'sos', icon: 'mdi-bell' },
+                { title: 'modules.core.history_location', action: 'locations', icon: 'mdi-map-marker' },
+              ]"
+              :menuItems="['edit', 'delete', 'password', 'sos', 'locations']"
+              :labelNew="'modules.core.new_customer'"
+              :showFilters="true"
+              @onClickNew="clickNew"
+              @onClickEdit="clickEdit"
+              @onClickDelete="clickDelete"
+              @onClickAction="clickAction"
+              :extraParameters="extraParams"
+            >
+              <template #extra-filters>
+                <v-row>
+                  <v-col>
+                    <v-select
+                      v-model="selectedCompany"
+                      :items="companies"
+                      item-title="name"
+                      item-value="id"
+                      :label="$t('commons.common.company')"
+                      clearable
+                      hide-details
+                    ></v-select>
+                  </v-col>
+                  <v-col>
+                    <v-select
+                      v-model="selectedGender"
+                      :items="genders"
+                      item-title="label"
+                      item-value="id"
+                      :label="$t('commons.common.gender')"
+                      clearable
+                      hide-details
+                    ></v-select>
+                  </v-col>
+                </v-row>
+              </template>
+              <template #item.name="{ item }">
+                {{ item.first_name }} {{ item.last_name }}
+              </template>
+              <template #item.image="{ item }">
+                <v-avatar size="40" variant="outlined">
+                  <v-img :src="uUtils.getUrlImg(item.customer_info.image)" />
+                </v-avatar>
+              </template>
+              <template #item.birth_date="{ item }">
+                {{ item.customer_info.birth_date }}
+              </template>
+              <template #item.phone="{ item }">
+                {{ item.customer_info.phone }}
+              </template>
+              <template #item.company="{ item }">
+                {{ item.customer_info.company_name }}
+              </template>
+            </exp-data-table>
+          </v-card-text>
+        </v-card>
+      </v-container>
+      <exp-modal-form
+        :title="$t('modules.core.new_customer')"
+        :width="800"
+        v-model="formModal"
+        @fnSave="saveBooking"
+      >
+        <v-card-text>
+          <v-row>
+            <v-col cols="7">
+              <exp-dynamic-form
+                v-model="formData"
+                :schema="(formSchemaCalculated as any)"
+                :errors="validate.$errors"
+                variant="outlined"
+                density="compact"
+                hide-details="true"
+              >
+              </exp-dynamic-form>
+            </v-col>
+            <v-col cols="5">
+              <div>
+                <exp-crop
+                  v-model="formData.url_image"
+                  :width="300"
+                  :height="300"
+                />
+              </div>
+              <div v-if="!((formData as any).id > 0)" class="mt-12">
+                <exp-password v-model="passwordData" />
+              </div>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </exp-modal-form>
+      <exp-modal-form
+        :title="$t('modules.core.history_sos_alert')"
+        :width="1100"
+        v-model="formModalSos"
+        :btn-save="false"
+      >
+        <history-sos :userId="userId" />
+      </exp-modal-form>
+      <exp-modal-form
+        :title="$t('modules.core.history_location')"
+        :width="1100"
+        v-model="formModalLocation"
+        :btn-save="false"
+      >
+        <history-locations :userId="userId" />
+      </exp-modal-form>
+      <exp-modal-form
+        :title="$t('modules.auth.password')"
+        :width="550"
+        v-model="passwordModal"
+        @fnSave="onUpdatePassword"
+        :btnSaveEnabled="!(passwordData?.valid !== true)"
+      >
+        <expPassword v-model="passwordData" />
+      </exp-modal-form>
+      <exp-modal-form
+        v-if="deleteModal"
+        v-model="deleteModal"
+        :title="$t('commons.forms.are_sure')"
+        :btnSaveText="$t('commons.forms.delete')"
+        @fnSave="confirmDelete"
+        size="400"
+      >
+        <p>{{ $t('commons.common.confirm_delete') }} <strong>{{ itemToDelete.first_name }}</strong>?</p>
+      </exp-modal-form>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -182,12 +199,16 @@ const deleteModal = ref(false);
 const itemToDelete = ref();
 const companies = ref([]);
 const selectedCompany = ref(null);
+const selectedGender = ref(null);
 const companyItems = ref([]);
 
 const extraParams = computed(() => {
   const params = {};
   if (selectedCompany.value) {
     params['customer__company'] = selectedCompany.value;
+  }
+  if (selectedGender.value) {
+    params['customer__gender'] = selectedGender.value;
   }
   return params;
 });
@@ -202,6 +223,7 @@ const formDataDefault = {
   image: "",
   birth_date: dayjs().format("YYYY-MM-DD"),
   blood_type: "1",
+  gender: "",
   company: "",
   secret_word: "",
   details: "",
@@ -217,6 +239,12 @@ const listBloodType = [
   { id: "8", label: "O-" },
   { id: "9", label: "Unknown" },
 ];
+
+const genders = [
+  { id: 'M', label: 'Male' },
+  { id: 'F', label: 'Female' }
+];
+
 const formData = ref({ id: null, ...formDataDefault });
 const passwordData = ref();
 const formSchema = computed(() => [
@@ -226,6 +254,7 @@ const formSchema = computed(() => [
   { key: "email", type: "email", title: t("commons.common.email"), required: true },
   { key: "phone", type: "phone", col:"md-6", title: t("commons.common.phone"), required: true },
   { key: "birth_date", type: "date", col:"md-6", title: t("commons.common.birth_date"), required: true },
+  { key: "gender", type: "select", items: genders, col:"md-6", title: t("commons.common.gender"), required: true },
   { key: "blood_type", type: "select", items: listBloodType, col:"md-6", title: t("commons.common.blood_type"), required: true },
   { key: "company", type: "select", items: companyItems.value, col:"md-6", title: t("commons.common.company"), required: true },
   { key: "secret_word", type: "text", title: t("commons.common.secret_word"), required: true },
@@ -278,6 +307,7 @@ const saveBooking = async () => {
       url_image: formData.value.url_image ?? "",
       birth_date: formData.value.birth_date,
       blood_type: formData.value.blood_type,
+      gender: formData.value.gender,
       company: formData.value.company,
       secret_word: formData.value.secret_word,
       details: formData.value.details,
@@ -306,6 +336,7 @@ const clickEdit = async (item: any) => {
     .then((item: any) => {
       formData.value = {
         ...item,
+        gender: item.gender,
         ...item.customer_info,
         id: item.id,
         url_image: uUtils.getUrlImg(item.customer_info.image ?? '')

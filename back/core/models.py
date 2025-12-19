@@ -10,11 +10,17 @@ class Staff(models.Model):
         return "%s" % self.user.first_name + " " + self.user.last_name
 
 
+GENDER_CHOICES = (
+    ('M', 'Male'),
+    ('F', 'Female'),
+)
+
 class Customer(models.Model):
-    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, related_name='customer')
     phone = models.CharField(max_length=255, blank=True, null=True)
     image = models.CharField(max_length=255, blank=True, null=True)
     blood_type = models.CharField(max_length=255, blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
     company = models.ForeignKey('Company', on_delete=models.SET_NULL, null=True, blank=True)
     birth_date = models.DateField(blank=True, null=True)
     secret_word = models.CharField(max_length=255, blank=True, null=True)

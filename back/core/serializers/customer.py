@@ -12,6 +12,11 @@ class CustomerInfoSerializer(BaseImageMixin, serializers.ModelSerializer):
         model = Customer
         exclude = ['user']
 
+class MinimalCustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ['id', 'first_name', 'last_name']
+
 class CustomerSerializer(BaseImageMixin, serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     customer_info = CustomerInfoSerializer(source='customer')

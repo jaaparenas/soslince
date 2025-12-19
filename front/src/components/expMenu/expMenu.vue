@@ -76,6 +76,11 @@ const itemsMenu = [
       icon: "mdi-domain",
       url: "/core/company",
       roles: [IS_ADMIN],
+    },
+    {
+      title: "commons.common.locations",
+      icon: "mdi-map-marker",
+      url: "/core/locations",
     }]
   },
 ];

@@ -3,7 +3,8 @@
     "errors": {
       "page_no_found": "Page no found",
       "undefined_error": "Undefined error",
-      "bad_username_password": "Incorrect username or password"
+      "bad_username_password": "Incorrect username or password",
+      "age_max_less_than_min": "Max age cannot be less than min age"
     },
     "common": {
       "id": "ID",
@@ -94,7 +95,11 @@
       "active": "Active",
       "date_filter": "Date filter",
       "attended": "Attended",
-      "nit": "NIT"
+      "nit": "NIT",
+      "locations": "Locations",
+      "gender": "Gender",
+      "age_min": "Min. Age",
+      "age_max": "Max. Age"
     },
     "language": {
       "language": "Idioma",

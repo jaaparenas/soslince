@@ -2,6 +2,7 @@ import useAuthStore from "@/modules/auth/stores/auth";
 import useGlobalState from "@/stores/global";
 import axios from "axios";
 import useExport from "@/composables/useExport";
+import dayjs from "dayjs";
 
 const sGlobalState = useGlobalState();
 const endpoint = "/api/1.0/core"
@@ -60,6 +61,19 @@ const useCustomer = () => {
     });
   };
 
+  const getLastLocations = (params: any = {}) => {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`${endpoint}/customer/last_locations/`, { params })
+        .then(async (resp: any) => {
+          resolve(resp.data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  };
+
   const setPassword = (item: any) => {
     return new Promise((resolve, reject) => {
       axios
@@ -86,6 +100,24 @@ const useCustomer = () => {
     }).replace(',', '');
   };
 
+  const getMarkerColor = (timestamp: string): string => {
+    const now = dayjs();
+    const locationTime = dayjs(timestamp);
+    const diffHours = now.diff(locationTime, 'hour');
+
+    if (diffHours < 24) {
+      return 'green'; // menos de 24 horas
+    } else if (diffHours < 72) { // 3 days * 24 hours
+      return 'blue'; // entre 24 y 3 días
+    } else if (diffHours < 168) { // 7 days * 24 hours
+      return 'yellow'; // entre 3 días y 1 semana
+    } else if (diffHours < 360) { // 15 days * 24 hours
+      return 'orange'; // entre 1 semana y 15 días
+    } else {
+      return 'red'; // más de 15 días
+    }
+  };
+
   const getExport = (type:string, userId: number, filters: string) => {
     useExport().excel(`${endpoint}/customer/list_${type}/?f=export&userId=${userId}&filter=${filters}`, "data.xlsx")
   }
@@ -95,9 +127,11 @@ const useCustomer = () => {
     getListSos,
     getPendingSos,
     getCloseSos,
+    getLastLocations,
     getExport,
     setPassword,
-    adjustDate
+    adjustDate,
+    getMarkerColor
   };
 };
 
