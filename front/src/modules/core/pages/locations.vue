@@ -27,6 +27,7 @@
               density="compact"
               :hide-details="true"
               :max="new Date().toISOString().split('T')[0]"
+              clearable
             ></v-date-input>
           </v-col>
           <v-col cols="12" md="1">
@@ -210,7 +211,7 @@ const filterParams = computed(() => {
   if (selectedCompanies.value.length) {
     params['customer__company__in'] = selectedCompanies.value.join(',');
   }
-  if (dateRange.value.length > 0) {
+  if (dateRange.value && dateRange.value.length > 0) {
     const startDate = new Date(dateRange.value[0]);
     const endDate = new Date(dateRange.value[dateRange.value.length - 1]);
     if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
@@ -220,10 +221,8 @@ const filterParams = computed(() => {
       ].join(',');
     }
   }
-  if (ageMin.value) {
+  if (ageMin.value && ageMax.value) {
     params['customer__customer_info__birth_date__lte'] = new Date(new Date().setFullYear(new Date().getFullYear() - ageMin.value)).toISOString().split('T')[0];
-  }
-  if (ageMax.value) {
     params['customer__customer_info__birth_date__gte'] = new Date(new Date().setFullYear(new Date().getFullYear() - ageMax.value - 1)).toISOString().split('T')[0];
   }
   if (selectedGenders.value.length) {
@@ -258,6 +257,13 @@ const getWsUrl = (): string => {
 };
 
 const loadLocations = async () => {
+  if (
+    (ageMin.value && !ageMax.value) ||
+    (!ageMin.value && ageMax.value) ||
+    (ageMin.value && ageMax.value && ageMax.value < ageMin.value)
+  ) {
+    return;
+  }
   console.log("Loading locations with params:", filterParams.value);
   const loader = loading.show({});
   locations.value = await uCustomer.getLastLocations(filterParams.value);
