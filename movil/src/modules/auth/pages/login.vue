@@ -16,13 +16,21 @@
             se usa solo con este fin.
           </v-card-text>
           <v-card-text class="pa-4">
-            <v-text-field
-              variant="outlined"
-              density="compact"
-              v-model="formData.username"
-              :label="$t('modules.auth.username')"
-              type="text"
-            ></v-text-field>
+            <div v-if="loginMethod === 'username'">
+              <v-text-field
+                variant="outlined"
+                density="compact"
+                v-model="formData.username"
+                :label="$t('modules.auth.username_email')"
+                type="text"
+              ></v-text-field>
+            </div>
+            <div v-else class="mb-4">
+              <exp-input-phone
+                v-model="formData.phone"
+                label="commons.common.phone"
+              ></exp-input-phone>
+            </div>
             <v-text-field
               variant="outlined"
               density="compact"
@@ -32,6 +40,12 @@
               :label="$t('modules.auth.password')"
               @click:append-inner="showPassword = !showPassword"
             />
+             <div class="text-center mt-n2 mb-4">
+              <a href="#" @click.prevent="toggleLoginMethod" class="toggle-link">
+                <span v-if="loginMethod === 'username'">{{ $t('modules.auth.login_with_phone') }}</span>
+                <span v-else>{{ $t('modules.auth.login_with_username') }}</span>
+              </a>
+            </div>
             <div class="mt-2 text-center">
               <v-btn
                 type="submit"
@@ -51,11 +65,12 @@
 </template>
 
 <script lang="ts" setup>
-import { toRefs, ref, reactive, computed } from "vue";
-
+import { toRefs, ref, reactive, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import useGlobal from "@/composables/useGobal";
 import useAuth from "@/modules/auth/composables/useAuth";
+import ExpInputPhone from '@/components/expInput/phone.vue';
+import { Preferences } from '@capacitor/preferences';
 
 import { useLoading } from "vue-loading-overlay";
 import { useVuelidate } from "@vuelidate/core";
@@ -70,27 +85,59 @@ const uGlobal = useGlobal();
 const uToast = uGlobal.useToast();
 const uErrors = uGlobal.useErrors();
 
+const loginMethod = ref('username'); // 'username' or 'phone'
+
 const rules = {
-  username: { required, minLength: minLength(2) },
+  username: { },
+  phone: { },
   password: { required, minLength: minLength(5) },
 };
 const showPassword = ref(false);
 const formData = reactive({
   username: "",
+  phone: "",
   password: "",
 });
 
 const validate = useVuelidate(rules, toRefs(formData));
 
 const enableLogin = computed(() => {
-  return validate.value != null && !validate.value.$invalid;
+  if (loginMethod.value === 'username') {
+    return formData.username.length >= 2 && formData.password.length >= 5;
+  } else {
+    return formData.phone.length > 5 && formData.password.length >= 5;
+  }
+});
+
+const toggleLoginMethod = async () => {
+  if (loginMethod.value === 'username') {
+    loginMethod.value = 'phone';
+    formData.username = '';
+  } else {
+    loginMethod.value = 'username';
+    formData.phone = '';
+  }
+  await Preferences.set({ key: 'loginMethod', value: loginMethod.value });
+};
+
+onMounted(async () => {
+  const { value } = await Preferences.get({ key: 'loginMethod' });
+  if (value && value === 'phone') {
+    loginMethod.value = 'phone';
+  }
 });
 
 const onLogin = async () => {
   validate.value.$touch();
-  if (!validate.value.$invalid) {
+  if (enableLogin.value) {
     let loader = loading.show({});
-    auth.authLogIn(formData)
+
+    const loginData = {
+      username: loginMethod.value === 'phone' ? formData.phone : formData.username,
+      password: formData.password
+    };
+
+    auth.authLogIn(loginData)
       .then(() => {
         router.push({ name: "core-index" });
       })
@@ -115,6 +162,15 @@ const onLogin = async () => {
   .card-login {
     border-radius: 15px;
     background-color: #ffffff;
+  }
+
+  .toggle-link {
+    font-size: 0.8rem;
+    text-decoration: none;
+    color: #555;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 </style>

@@ -13,7 +13,7 @@
         class="country-code-v-select"
       >
         <template #selection="{ item }">
-          {{ item.raw.value }}
+          {{ item.value }}
         </template>
       </v-select>
       <div class="divider"></div>

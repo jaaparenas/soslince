@@ -14,6 +14,7 @@ declare module 'vue' {
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     InputDelay: typeof import('./src/components/expInput/inputDelay.vue')['default']
     MaskNumber: typeof import('./src/components/expInput/maskNumber.vue')['default']
+    Phone: typeof import('./src/components/expInput/phone.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
