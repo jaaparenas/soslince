@@ -14,7 +14,7 @@ const useAuth = (authStore: any = null) => {
     return new Promise((resolve, reject) => {
       authLogOut();
       axios
-        .post(`/api/1.0/auth/jwt/create`, {
+        .post(`/api/1.0/auth/login/`, {
           username: data.username,
           password: data.password,
         })

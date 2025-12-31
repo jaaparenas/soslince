@@ -5,7 +5,16 @@
       <v-card-text>
         <v-row dense>
           <v-col cols="12" md="3">
-            <v-select
+            <v-text-field
+              v-model="internalSearch"
+              :label="$t('commons.common.search')"
+              clearable
+              hide-details
+              density="compact"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-autocomplete
               v-model="selectedCompanies"
               :items="companies"
               item-title="name"
@@ -15,7 +24,7 @@
               clearable
               hide-details
               density="compact"
-            ></v-select>
+            ></v-autocomplete>
           </v-col>
           <v-col cols="12" md="3">
             <v-date-input
@@ -126,6 +135,15 @@ import 'vue-leaflet-markercluster/dist/style.css'
 import expModalForm from "@/components/expModalForm";
 import historyLocations from "../components/history_locations.vue";
 
+// Debounce utility function
+const debounce = (fn: Function, delay: number) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return (...args: any[]) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+};
+
 const loading = useLoading();
 const uCustomer = useCustomer();
 const { t } = useI18n();
@@ -182,12 +200,18 @@ const genders = ref([
 ]);
 
 // Filter State
+const internalSearch = ref('');
+const search = ref('');
 const selectedCompanies = ref([]);
 const dateRange = ref([]);
 const ageMin = ref(null);
 const ageMax = ref(null);
 const selectedGenders = ref([]);
 const selectedBloodTypes = ref([]); 
+
+watch(internalSearch, debounce((newValue: string) => {
+  search.value = newValue;
+}, 500));
 
 watch(ageMin, (val) => {
   if (val < 0) ageMin.value = 0;
@@ -208,6 +232,9 @@ const ageMaxRule = () => {
 
 const filterParams = computed(() => {
   const params: any = {};
+  if (search.value) {
+    params['search'] = search.value;
+  }
   if (selectedCompanies.value.length) {
     params['customer__company__in'] = selectedCompanies.value.join(',');
   }

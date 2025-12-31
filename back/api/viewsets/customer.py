@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from django.contrib.auth import get_user_model
-from core.models import Customer, CustomerSOS, CustomerLocation
+from core.models import Customer, CustomerSOS, CustomerLocation, Company
 from soslince.mixins.baseImage import BaseImageMixin
 
 class CustomerViewSet(viewsets.GenericViewSet):
@@ -46,7 +46,7 @@ class CustomerViewSet(viewsets.GenericViewSet):
             "image": customer.image if customer else "",
             "phone": customer.phone if customer else "",
             "blood_type": customer.blood_type if customer else 1,
-            "company": customer.company if customer else "",
+            "company": customer.company.id if customer and customer.company else None,
             "birth_date": customer.birth_date if customer else "",
             "secret_word": customer.secret_word if customer else "",
             "details": customer.details if customer else "",
@@ -162,8 +162,21 @@ class CustomerViewSet(viewsets.GenericViewSet):
                 customer.birth_date = birth_date
             if blood_type:
                 customer.blood_type = blood_type
-            if company:
-                customer.company = company
+            if company is not None and company != "":
+                company_obj = None
+                # Accept numeric id (int or numeric string)
+                try:
+                    if isinstance(company, (int, str)) and str(company).isdigit():
+                        company_obj = Company.objects.filter(id=int(company)).first()
+                    elif isinstance(company, dict) and company.get('id'):
+                        company_obj = Company.objects.filter(id=company.get('id')).first()
+                    elif isinstance(company, Company):
+                        company_obj = company
+                except Exception:
+                    company_obj = None
+
+                # Assign Company instance or None to avoid assignment errors
+                customer.company = company_obj
             if secret_word:
                 customer.secret_word = secret_word
             if details:

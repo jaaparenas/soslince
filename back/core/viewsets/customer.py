@@ -8,6 +8,8 @@ from rest_framework.permissions import BasePermission
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q, F, Window
+from django.db.models.functions import RowNumber
 
 from core.models import Customer, CustomerLocation, CustomerSOS
 from core.serializers.customer import CustomerSerializer, MinimalCustomerSerializer
@@ -122,65 +124,78 @@ class CustomerViewSet (viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='last_locations')
     def last_locations(self, request, *args, **kwargs):
-        # 1. Start with all active customers
-        customers = Customer.objects.filter(user__is_active=True)
+        # Start with a base queryset of locations, pre-fetching related customer data
+        locations_qs = CustomerLocation.objects.select_related('customer__user', 'customer__company')
 
-        # 2. Apply filters to customers
+        # 1. Apply all filters directly to the CustomerLocation queryset
+
+        # Base filter for active users
+        locations_qs = locations_qs.filter(customer__user__is_active=True)
+
+        # Customer filters
         customer_filters = {}
-        
         company_ids_str = request.query_params.get('customer__company__in')
         if company_ids_str:
-            customer_filters['company__id__in'] = [int(x) for x in company_ids_str.split(',')]
+            customer_filters['customer__company__id__in'] = [int(x) for x in company_ids_str.split(',')]
         
         gender_ids_str = request.query_params.get('customer__customer_info__gender__in')
         if gender_ids_str:
-            customer_filters['gender__in'] = gender_ids_str.split(',')
+            customer_filters['customer__gender__in'] = gender_ids_str.split(',')
             
         blood_type_ids_str = request.query_params.get('customer__customer_info__blood_type__in')
         if blood_type_ids_str:
-            customer_filters['blood_type__in'] = blood_type_ids_str.split(',')
+            customer_filters['customer__blood_type__in'] = blood_type_ids_str.split(',')
             
         birth_date_gte_str = request.query_params.get('customer__customer_info__birth_date__gte')
         if birth_date_gte_str:
-            customer_filters['birth_date__gte'] = birth_date_gte_str
+            customer_filters['customer__birth_date__gte'] = birth_date_gte_str
             
         birth_date_lte_str = request.query_params.get('customer__customer_info__birth_date__lte')
         if birth_date_lte_str:
-            customer_filters['birth_date__lte'] = birth_date_lte_str
-
+            customer_filters['customer__birth_date__lte'] = birth_date_lte_str
+        
         if customer_filters:
-            customers = customers.filter(**customer_filters)
+            locations_qs = locations_qs.filter(**customer_filters)
 
-        # 3. Handle timestamp__range for locations
+        # Search filter
+        search_query = request.query_params.get('search')
+        if search_query:
+            locations_qs = locations_qs.filter(
+                Q(customer__user__first_name__icontains=search_query) |
+                Q(customer__user__last_name__icontains=search_query) |
+                Q(customer__phone__icontains=search_query)
+            )
+
+        # Timestamp filter
         timestamp_range_str = request.query_params.get('timestamp__range')
-        location_filters = {}
         if timestamp_range_str:
             try:
                 start_date_str, end_date_str = timestamp_range_str.split(',')
-                # Ensure timezone awareness for comparison
                 start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
                 end_date = datetime.fromisoformat(end_date_str.replace('Z', '+00:00'))
-                location_filters['timestamp__range'] = (start_date, end_date)
+                locations_qs = locations_qs.filter(timestamp__range=(start_date, end_date))
             except ValueError:
-                pass # Ignore invalid date range
+                pass 
 
+        # 2. Use a window function to find the latest location for each customer within the filtered set
+        locations_qs = locations_qs.annotate(
+            row_number=Window(
+                expression=RowNumber(),
+                partition_by=[F('customer_id')],
+                order_by=F('timestamp').desc()
+            )
+        ).filter(row_number=1)
+
+        # 3. Serialize the final queryset
         customers_with_last_location = []
-
-        for customer in customers.select_related('company', 'user'):
-            # Get the last location for each customer, applying timestamp filter if present
-            last_location_queryset = CustomerLocation.objects.filter(customer=customer)
-            if location_filters:
-                last_location_queryset = last_location_queryset.filter(**location_filters)
-
-            last_location = last_location_queryset.order_by('-timestamp').first()
-
-            if last_location:
-                customers_with_last_location.append({
-                    'customer': MinimalCustomerSerializer(customer.user).data,
-                    'latitude': last_location.latitude,
-                    'longitude': last_location.longitude,
-                    'timestamp': last_location.timestamp
-                })
+        for location in locations_qs:
+            customers_with_last_location.append({
+                'customer': MinimalCustomerSerializer(location.customer.user).data,
+                'latitude': location.latitude,
+                'longitude': location.longitude,
+                'timestamp': location.timestamp
+            })
+            
         return Response(customers_with_last_location)
 
     @action(detail=False, methods=['post'], url_path='close_sos')

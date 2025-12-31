@@ -95,7 +95,7 @@
       "active": "Activo",
       "date_filter": "Filtro de fecha",
       "attended": "Atendido",
-      "nit": "NIT",
+      "nit": "RFC",
       "locations": "Ubicaciones",
       "gender": "Género",
       "age_min": "Edad Mín.",
@@ -159,6 +159,7 @@
       "authenticating": "Autenticando",
       "recovery_password": "Recuperación de contraseña",
       "username": "Nombre de usuario",
+      "username_email": "Nombre de usuario o correo electrónico",
       "enter_username": "Introduce tu nombre de usuario",
       "password": "Contraseña",
       "enter_password": "Introduce tu contraseña",
@@ -186,7 +187,9 @@
       "role": "Rol",
       "admin": "Administrador",
       "staff": "Personal",
-      "basic_info": "Información básica"
+      "basic_info": "Información básica",
+      "login_with_phone": "Iniciar sesión con número de teléfono",
+      "login_with_username": "Iniciar sesión con nombre de usuario o email"
     },
     "core": {
       "core": "Núcleo",

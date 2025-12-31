@@ -26,7 +26,7 @@
               <template #extra-filters>
                 <v-row>
                   <v-col>
-                    <v-select
+                    <v-autocomplete
                       v-model="selectedCompany"
                       :items="companies"
                       item-title="name"
@@ -34,9 +34,9 @@
                       :label="$t('commons.common.company')"
                       clearable
                       hide-details
-                    ></v-select>
+                    ></v-autocomplete>
                   </v-col>
-                  <v-col>
+                  <v-col v-if="false">
                     <v-select
                       v-model="selectedGender"
                       :items="genders"
@@ -82,7 +82,7 @@
               <exp-dynamic-form
                 v-model="formData"
                 :schema="(formSchemaCalculated as any)"
-                :errors="validate.$errors"
+                :errors="combinedErrors"
                 variant="outlined"
                 density="compact"
                 hide-details="true"
@@ -164,6 +164,7 @@ import expCrop from "@/components/expCrop/expCrop.vue";
 import historyLocations from "../components/history_locations.vue";
 import historySos from "../components/history_sos.vue";
 import useCustomer from "../composables/useCustomer";
+import useToast from "@/composables/useToast";
 
 const uCrud = useCrud(`${endpoint}/customer`);
 const companyCrud = useCrud(`${endpoint}/company`);
@@ -267,10 +268,17 @@ const rules = {
 };
 const validate = useVuelidate(rules, formData);
 
-const formSchemaCalculated = computed(() => {
-  if ((formData.value as any)?.id != null) {
-    return formSchema.value.filter((item: any) => item.key != 'email');
+const uToast = useToast();
+const backendErrors = ref<any[]>([]);
+const combinedErrors = computed(() => {
+  try {
+    return [...(validate.value.$errors || []), ...backendErrors.value];
+  } catch (e) {
+    return [...backendErrors.value];
   }
+});
+
+const formSchemaCalculated = computed(() => {
   return formSchema.value;
 });
 
@@ -313,16 +321,58 @@ const saveBooking = async () => {
       details: formData.value.details,
     }
   };
-  await uCrud
-    .save(data)
-    .then(() => {
-      drawRefresh.value = `${uUtils.createUUID()}`;
-      formModal.value = false;
-    })
-    .finally(() => {});
+  try {
+    await uCrud
+      .save(data)
+      .then(() => {
+        drawRefresh.value = `${uUtils.createUUID()}`;
+        formModal.value = false;
+      })
+      .finally(() => {});
+  } catch (error) {
+    
+    // try to extract backend validation errors (axios typical shape: error.response.data)
+    const respData = (error as any)?.response?.data ?? (error as any)?.data ?? (error as any);
+    const errorsArray: any[] = [];
+
+    const pushFieldError = (property: string, message: string) => {
+      errorsArray.push({ $property: property, $message: message });
+    };
+
+    try {
+      if (respData) {
+        // If backend returns an object with `customer_info` nested errors
+        if (respData.customer_info && typeof respData.customer_info === 'object') {
+          for (const k in respData.customer_info) {
+            const v = respData.customer_info[k];
+            const msg = Array.isArray(v) ? v.join(', ') : String(v);
+            pushFieldError(k, msg);
+          }
+        } else if (respData.email && typeof respData.email === 'object') {
+          const v = respData.email;
+          const msg = Array.isArray(v) ? v.join(', ') : String(v);
+          pushFieldError('email', msg);
+        }
+      }
+    } catch (e) {
+      console.log('Error parsing backend errors', e);
+    }
+
+    // set backend errors for form and show toast(s)
+    backendErrors.value = errorsArray;
+    if (errorsArray.length > 0) {
+      // build HTML list for toast
+      const html = `<ul>${errorsArray.map((x: any) => `<li><strong>${x.$property}</strong>: ${x.$message}</li>`).join('')}</ul>`;
+      uToast.toastHTML(html, { type: 'error' } as any);
+    } else {
+      // fallback generic message
+      uToast.toastError('Error saving customer data.');
+    }
+  }
 };
 
 const clickNew = () => {
+  backendErrors.value = [];
   formData.value = { id: null, ...formDataDefault };
   if (selectedCompany.value) {
     formData.value.company = selectedCompany.value;
@@ -331,6 +381,7 @@ const clickNew = () => {
 };
 
 const clickEdit = async (item: any) => {
+  backendErrors.value = [];
   await uCrud
     .retrieve(item.id)
     .then((item: any) => {
