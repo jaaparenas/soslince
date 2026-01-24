@@ -47,7 +47,7 @@ const props = defineProps({
   },
   extraMenuItems: {
     type: Array,
-    default: () => []
+    default: (): any[] => []
   },
   extraParameters: {
     type: Object,

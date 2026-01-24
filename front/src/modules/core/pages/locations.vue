@@ -125,11 +125,10 @@ import { useI18n } from "vue-i18n";
 import { useLoading } from "vue-loading-overlay";
 import dayjs from "dayjs";
 
-import * as L from 'leaflet'
-globalThis.L = L
+// Importar leaflet-global PRIMERO para asegurar que window.L esté disponible
+import L from '@/utils/leaflet-global'
 import { LMap, LTileLayer, LMarker, LTooltip } from '@vue-leaflet/vue-leaflet'
 import { LMarkerClusterGroup } from 'vue-leaflet-markercluster'
-import 'leaflet/dist/leaflet.css';
 import 'vue-leaflet-markercluster/dist/style.css'
 
 import expModalForm from "@/components/expModalForm";
@@ -293,7 +292,7 @@ const loadLocations = async () => {
   }
   console.log("Loading locations with params:", filterParams.value);
   const loader = loading.show({});
-  locations.value = await uCustomer.getLastLocations(filterParams.value);
+  locations.value = (await uCustomer.getLastLocations(filterParams.value)) as any[];
   loader.hide();
 };
 
@@ -301,7 +300,7 @@ watch(filterParams, loadLocations, { deep: true });
 
 onMounted(async () => {
   companyCrud.list().then(resp => {
-    companies.value = resp;
+    companies.value = resp as any[];
   });
   await loadLocations();
 });

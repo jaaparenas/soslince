@@ -204,7 +204,7 @@ const selectedGender = ref(null);
 const companyItems = ref([]);
 
 const extraParams = computed(() => {
-  const params = {};
+  const params: Record<string, any> = {};
   if (selectedCompany.value) {
     params['customer__company'] = selectedCompany.value;
   }
