@@ -1,7 +1,9 @@
 import json
 from django.db.models import Q
 from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
+from core.filters import CustomSearchFilter
 from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission, IsAdminUser
 from django.contrib.auth import get_user_model
@@ -17,6 +19,8 @@ class StaffViewSet (viewsets.ModelViewSet):
 
     permission_classes = [IsAdminUser]
     serializer_class = StaffSerializer
+    filter_backends = [DjangoFilterBackend, CustomSearchFilter]
+    search_fields = ['first_name', 'last_name']
 
     def get_queryset(self):
         user = self.request.user

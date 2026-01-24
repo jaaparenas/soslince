@@ -46,6 +46,8 @@ DJANGO_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django_celery_beat',
+    'django_celery_results'
 ]
 
 PROJECT_APPS = [
@@ -93,7 +95,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'soslince.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -108,7 +109,6 @@ DATABASES = {
     }
 }
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -128,14 +128,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -168,6 +166,19 @@ CHANNEL_LAYERS = {
 
 REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
 REDIS_PORT = os.environ.get("REDIS_PORT", "6379")
+REDIS_DB = os.environ.get("REDIS_DB", 0)
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", "")
+
+# CELERY SETTINGS
+CELERY_BROKER_URL = 'redis://' + os.environ.get("REDIS_HOST", "localhost") + ':' + os.environ.get("REDIS_PORT", "6379")
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = os.environ.get("TIME_ZONE", "UTC")
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_RESULT_EXTENDED = True
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
@@ -213,11 +224,13 @@ DJOSER = {
 #]
 CORS_ALLOW_ALL_ORIGINS = True
 
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
-EMAIL_PORT = os.environ.get("EMAIL_PORT", "587")
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "")
-EMAIL_NOTIFICATIONS = os.environ.get("EMAIL_NOTIFICATIONS", "")
+EMAIL_HOST = os.environ.get("SMTP_HOST", 'smtp.live.com')
+EMAIL_PORT = os.environ.get("SMTP_PORT", 587)
+EMAIL_HOST_USER = os.environ.get("SMTP_USER", 'info@soslince.co')
+EMAIL_HOST_PASSWORD = os.environ.get("SMTP_PASS", '')
+EMAIL_USE_TLS = os.environ.get("SMTP_TLS", True)
+EMAIL_SENDER = os.environ.get("SMTP_SENDER", 'info@soslince.co')
+
+ADMIN_EMAIL= os.environ.get("ADMIN_EMAIL", '')
 
 SITE_ID = 1

@@ -98,3 +98,7 @@ coverage/
 *.swp
 *.swo
 *~
+
+CLAUDE.md
+GEMINI.md
+*.md

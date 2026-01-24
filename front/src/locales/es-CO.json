@@ -3,7 +3,8 @@
     "errors": {
       "page_no_found": "Página no encontrada",
       "undefined_error": "Error indefinido",
-      "bad_username_password": "Nombre de usuario o contraseña incorrectos"
+      "bad_username_password": "Nombre de usuario o contraseña incorrectos",
+      "age_max_less_than_min": "La edad máxima no puede ser menor que la mínima"
     },
     "common": {
       "id": "ID",
@@ -93,7 +94,12 @@
       "attended_successfully": "Atendida correctamente",
       "active": "Activo",
       "date_filter": "Filtro de fecha",
-      "attended": "Atendido"
+      "attended": "Atendido",
+      "nit": "RFC",
+      "locations": "Ubicaciones",
+      "gender": "Género",
+      "age_min": "Edad Mín.",
+      "age_max": "Edad Máx."
     },
     "language": {
       "language": "Idioma",
@@ -153,6 +159,7 @@
       "authenticating": "Autenticando",
       "recovery_password": "Recuperación de contraseña",
       "username": "Nombre de usuario",
+      "username_email": "Nombre de usuario o correo electrónico",
       "enter_username": "Introduce tu nombre de usuario",
       "password": "Contraseña",
       "enter_password": "Introduce tu contraseña",
@@ -180,7 +187,9 @@
       "role": "Rol",
       "admin": "Administrador",
       "staff": "Personal",
-      "basic_info": "Información básica"
+      "basic_info": "Información básica",
+      "login_with_phone": "Iniciar sesión con número de teléfono",
+      "login_with_username": "Iniciar sesión con nombre de usuario o email"
     },
     "core": {
       "core": "Núcleo",
@@ -191,7 +200,10 @@
       "new_staff": "Nuevo personal",
       "history_location": "Historial de ubicaciones",
       "history_sos_alert": "Historial de alertas de SOS",
-      "active_sos_alert": "Alertas de SOS activas"
+      "active_sos_alert": "Alertas de SOS activas",
+      "companies": "Empresas",
+      "new_company": "Nueva empresa",
+      "company": "Empresa"
     },
     "portal": {
       "portal": "Portal",

@@ -16,6 +16,16 @@ const router = {
       path: "core/staff",
       name: "core-staff",
       component: () => import( /* webpackChunkName: "CoreStaff" */ "@/modules/core/pages/staff.vue"),
+    },
+    {
+      path: "core/company",
+      name: "core-company",
+      component: () => import( /* webpackChunkName: "CoreCompany" */ "@/modules/core/pages/company.vue"),
+    },
+    {
+      path: "core/locations",
+      name: "core-locations",
+      component: () => import( /* webpackChunkName: "CoreLocations" */ "@/modules/core/pages/locations.vue"),
     }
   ],
 };

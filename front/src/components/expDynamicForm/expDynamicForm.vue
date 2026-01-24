@@ -2,6 +2,7 @@
   import { useAttrs } from 'vue';
   import brsDateTime from '@/components/expInput/dateTime.vue';
   import expSnippet from '@/components/expSnippet/expSnippet.vue';
+  import expInputPhone from '@/components/expInput/phone.vue';
 
   import { QuillEditor } from '@vueup/vue-quill'
   import '@vueup/vue-quill/dist/vue-quill.snow.css'
@@ -154,6 +155,11 @@
           type="number"
           v-bind="attrs"
           :error="((errors as any)?.filter((x: any) => x.$property == (item as any).key)?.length > 0)"
+        />
+        <exp-input-phone v-else-if="(item as any).type == 'phone'"
+          v-model="(modelValue as any)[(item as any).key]"
+          :label="(item as any).title"
+          :customClass="attrs.class ? String(attrs.class) : ''"
         />
         <v-text-field v-else
           :label="(item as any).title"

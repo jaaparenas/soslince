@@ -63,3 +63,14 @@ try {
 } catch(Exception e) {
     logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
 }
+
+configurations.all {
+    resolutionStrategy {
+        // Forzamos la versión 2.6.2 que es la última que mantiene 
+        // la compatibilidad total con el "ReportFragment" que falta
+        force 'androidx.lifecycle:lifecycle-runtime:2.6.2'
+        force 'androidx.lifecycle:lifecycle-common:2.6.2'
+        force 'androidx.lifecycle:lifecycle-process:2.6.2'
+        force 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
+    }
+}

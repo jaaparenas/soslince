@@ -30,6 +30,14 @@ allprojects {
             url("${project(':transistorsoft-capacitor-background-fetch').projectDir}/libs")
         }
     }
+    configurations.all {
+        resolutionStrategy {
+            force 'androidx.lifecycle:lifecycle-runtime:2.8.4'
+            force 'androidx.lifecycle:lifecycle-common:2.8.4'
+            force 'androidx.lifecycle:lifecycle-process:2.8.4'
+            force 'androidx.lifecycle:lifecycle-viewmodel:2.8.4'
+        }
+    }
 }
 
 task clean(type: Delete) {

@@ -18,12 +18,14 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from core.apiview.login import LoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('api/1.0/core/', include('core.urls')),
 
+    path('api/1.0/auth/login/', LoginView.as_view()),
     path('api/1.0/auth/', include('djoser.urls')),
     path('api/1.0/auth/', include('djoser.urls.jwt')),
 

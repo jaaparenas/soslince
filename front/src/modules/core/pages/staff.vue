@@ -29,18 +29,28 @@
         </exp-data-table>
       </v-card-text>
     </v-card>
+    <profileForm
+      v-if="profileModal"
+      v-model="profileModal"
+      :id="staffId"
+      @onSave="onSaveProfile"
+    />
+    <passwordForm
+      v-if="passwordModal"
+      v-model="passwordModal"
+      :id="staffId"
+    />
+    <exp-modal-form
+      v-if="deleteModal"
+      v-model="deleteModal"
+      :title="$t('commons.forms.are_sure')"
+      :btnSaveText="$t('commons.forms.delete')"
+      @fnSave="confirmDelete"
+      size="400"
+    >
+      <p>{{ $t('commons.common.confirm_delete') }} <strong>{{ itemToDelete.first_name }}</strong>?</p>
+    </exp-modal-form>
   </v-container>
-  <profileForm
-    v-if="profileModal"
-    v-model="profileModal"
-    :id="staffId"
-    @onSave="onSaveProfile"
-  />
-  <passwordForm
-    v-if="passwordModal"
-    v-model="passwordModal"
-    :id="staffId"
-  />
 </template>
 
 <script lang="ts" setup>
@@ -50,9 +60,14 @@ import { useI18n } from "vue-i18n";
 import expDataTable from "@/components/expDataTable";
 import profileForm from "@/modules/core/components/profile.vue";
 import passwordForm from "@/modules/core/components/password.vue";
+import expModalForm from "@/components/expModalForm/expModalForm.vue";
+import useCrud from "@/composables/useCrud";
+import useUtils from "@/composables/useUtils";
 
 const endpoint = "/api/1.0/core";
 const { t } = useI18n();
+const uCrud = useCrud(`${endpoint}/staff`);
+const uUtils = useUtils();
 
 const headers: any[] = [
   { key: 'id', title: t("commons.common.id"), width: "auto", align: "start", sortable: true },
@@ -66,6 +81,8 @@ const headers: any[] = [
 ];
 const drawRefresh = ref("");
 const staffId = ref();
+const deleteModal = ref(false);
+const itemToDelete = ref();
 
 const profileModal = ref(false);
 const passwordModal = ref(false);
@@ -88,7 +105,15 @@ const clickAction = (item: any, action: string) => {
 };
 
 const clickDelete = (item: any) => {
-  //console.log(item);
+  itemToDelete.value = item;
+  deleteModal.value = true;
+};
+
+const confirmDelete = () => {
+  uCrud.remove(itemToDelete.value.id).then(() => {
+    drawRefresh.value = uUtils.createUUID();
+    deleteModal.value = false;
+  })
 };
 
 const onSaveProfile = (uuid: string) => {

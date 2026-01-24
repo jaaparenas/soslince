@@ -150,6 +150,7 @@
       "authenticating": "Autenticating",
       "recovery_password": "Password recovery ",
       "username": "Username",
+      "username_email": "Username or Email",
       "enter_username": "Enter your username",
       "password": "Password",
       "enter_password": "Enter your password",
@@ -180,7 +181,9 @@
       "basic_info": "Basic info",
       "availability": "Availability",
       "vacations": "Vacations",
-      "password_updated": "Password updated successfully"
+      "password_updated": "Password updated successfully",
+      "login_with_phone": "Login with phone number",
+      "login_with_username": "Login with username or email"
     },
     "appointment": {
       "appointment": "Appointment",

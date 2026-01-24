@@ -3,7 +3,8 @@
     "errors": {
       "page_no_found": "Page no found",
       "undefined_error": "Undefined error",
-      "bad_username_password": "Incorrect username or password"
+      "bad_username_password": "Incorrect username or password",
+      "age_max_less_than_min": "Max age cannot be less than min age"
     },
     "common": {
       "id": "ID",
@@ -93,7 +94,12 @@
       "attended_successfully": "Attended successfully",
       "active": "Active",
       "date_filter": "Date filter",
-      "attended": "Attended"
+      "attended": "Attended",
+      "nit": "RFC",
+      "locations": "Locations",
+      "gender": "Gender",
+      "age_min": "Min. Age",
+      "age_max": "Max. Age"
     },
     "language": {
       "language": "Idioma",
@@ -153,6 +159,7 @@
       "authenticating": "Autenticating",
       "recovery_password": "Password recovery ",
       "username": "Username",
+      "username_email": "Username or Email",
       "enter_username": "Enter your username",
       "password": "Password",
       "enter_password": "Enter your password",
@@ -180,7 +187,9 @@
       "role": "Role",
       "admin": "Administrator",
       "staff": "Staff",
-      "basic_info": "Basic info"
+      "basic_info": "Basic info",
+      "login_with_phone": "Login with phone number",
+      "login_with_username": "Login with username or email"
     },
     "core": {
       "core": "Core",
@@ -191,7 +200,10 @@
       "new_staff": "New staff",
       "history_location": "Location History",
       "history_sos_alert": "SOS alert History",
-      "active_sos_alert": "Active SOS alert"
+      "active_sos_alert": "Active SOS alert",
+      "companies": "Companies",
+      "new_company": "New company",
+      "company": "Company"
     },
     "portal": {
       "portal": "Portal",

@@ -12,3 +12,7 @@ djangorestframework-simplejwt==5.3.1
 django-cors-headers==4.4.0
 djoser==2.2.3
 openpyxl==3.1.2
+django-filter==24.3
+celery==5.6.0
+django-celery-beat==2.8.1
+django_celery_results==2.6.0

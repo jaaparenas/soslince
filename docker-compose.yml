@@ -1,0 +1,65 @@
+services:
+  soslince-django:
+    build: ./back
+    image: web:django
+    restart: always
+    hostname: soslince-django
+    #command: bash -c "python manage.py runserver 0.0.0.0:8000"
+    #command: bash -c "daphne -b 0.0.0.0 expansion.asgi:application"
+    command: bash -c "python manage.py migrate && gunicorn -b 0.0.0.0 -w 4 soslince.wsgi:application"
+    env_file:
+      - ./back/.env
+    volumes:
+      - ./static:/code/static
+      - ./media:/code/media
+#    ports:
+#      - 8000:8000
+    depends_on:
+      - redis
+      - postgres
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    hostname: soslince-postgres
+#    ports:
+#      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: "aRxRwLpJ2gC2Xb"
+    volumes:
+      - ./pgsql:/var/lib/postgresql/data
+  redis:
+    image: redis
+    restart: always
+    hostname: soslince-redis
+#    ports:
+#      - 6379:6379
+  celery-worker:
+    build: ./back
+    image: web:django
+    restart: always
+    hostname: soslince-celery-worker
+    command: celery -A soslince worker -l info
+    env_file:
+      - ./back/.env
+    volumes:
+      - ./static:/code/static
+      - ./media:/code/media
+    depends_on:
+      - redis
+      - postgres
+  celery-beat:
+    build: ./back
+    image: web:django
+    restart: always
+    hostname: soslince-celery-beat
+    command: celery -A soslince beat -l info
+    env_file:
+      - ./back/.env
+    depends_on:
+      - redis
+      - postgres
+      - celery-worker
+networks:
+  default:
+    external: true
+    name: services

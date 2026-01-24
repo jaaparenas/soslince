@@ -56,19 +56,19 @@
         />
       </v-col>
       <v-col cols="6">
-        <v-text-field
+        <exp-input-phone
           v-model="formData.phone"
-          :label="$t('commons.common.phone')"
-          variant="outlined"
-          density="compact"
-          hide-details
-          :error="hasError('phone')"
+          label="commons.common.phone"
+          :customClass="hasError('phone') ? 'v-input--error' : ''"
         />
       </v-col>
       <v-col cols="6">
-        <v-text-field
+        <v-select
           v-model="formData.company"
           :label="$t('commons.common.company')"
+          :items="companies"
+          item-title="name"
+          item-value="id"
           variant="outlined"
           density="compact"
           hide-details
@@ -112,12 +112,14 @@ import { useVuelidate } from "@vuelidate/core";
 import { required, minLength } from "@vuelidate/validators";
 
 import expDateTime from '@/components/expInput/dateTime.vue';
+import expInputPhone from '@/components/expInput/phone.vue';
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
 import useAuth from "@/modules/auth/composables/useAuth";
 import useCore from "@/modules/core/composables/useCore";
 import useUtils from "@/composables/useUtils";
+import useCrud from "@/composables/useCrud";
 import expCrop from "@/components/expCrop/expCrop.vue";
 
 const { t } = useI18n();
@@ -125,8 +127,10 @@ const uUtils = useUtils();
 const uCore = useCore();
 const uRouter = useRouter();
 const uAuth = useAuth();
+const companyCrud = useCrud('/api/1.0/core/company');
 
 const isLoaded = ref(false);
+const companies = ref([]);
 const listBloodType = [
   { id: "1", label: "A+" },
   { id: "2", label: "A-" },
@@ -159,7 +163,7 @@ const rules = {
   first_name: { required, minLength: minLength(2) },
   last_name: { required, minLength: minLength(2) },
   phone: { required, minLength: minLength(2) },
-  company: { required, minLength: minLength(5) },
+  company: { required },
   secret_word: { required, minLength: minLength(5) },
 };
 
@@ -176,6 +180,10 @@ onMounted(async () => {
     url_image: uUtils.getUrlImg(userData.data.image ?? '')
   };
   isLoaded.value = true;
+
+  companyCrud.list().then((resp: any) => {
+    companies.value = resp;
+  });
 });
 
 const updateData = async () => {
