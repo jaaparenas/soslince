@@ -99,5 +99,6 @@ coverage/
 *.swo
 *~
 
-# Gemini CLI
+CLAUDE.md
 GEMINI.md
+*.md
