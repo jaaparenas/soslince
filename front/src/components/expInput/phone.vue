@@ -1,6 +1,6 @@
 <template>
   <div class="custom-input" @focusin="handleFocus" @focusout="handleBlur">
-    <label :class="['custom-input-label', labelClasses, customClass]">{{ t(label) }}</label>
+    <label :class="['custom-input-label', labelClasses, customClass]">{{ label }}</label>
     <div class="phone-input-wrapper">
       <v-select
         v-model="countryCode"
@@ -31,8 +31,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue';
 import { countryCallingCodes } from '@/data/countryCallingCodes';
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
 
 const props = defineProps({
   modelValue: {

@@ -265,6 +265,7 @@ const rules = {
   first_name: { required, minLength: minLength(2) },
   last_name: { required, minLength: minLength(2) },
   email: { required, email, minLength: minLength(5) },
+  phone: { required, minLength: minLength(7) },
 };
 const validate = useVuelidate(rules, formData);
 

@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import useCrud from "@/composables/useCrud";
 import { VDateInput } from 'vuetify/labs/VDateInput'
 import useCustomer from "@/modules/core/composables/useCustomer";
@@ -235,27 +235,27 @@ const filterParams = computed(() => {
     params['search'] = search.value;
   }
   if (selectedCompanies.value.length) {
-    params['customer__company__in'] = selectedCompanies.value.join(',');
+    params['company'] = selectedCompanies.value.join(',');
   }
   if (dateRange.value && dateRange.value.length > 0) {
     const startDate = new Date(dateRange.value[0]);
     const endDate = new Date(dateRange.value[dateRange.value.length - 1]);
     if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-      params['timestamp__range'] = [
+      params['date_range'] = [
         startDate.toISOString(),
         endDate.toISOString()
       ].join(',');
     }
   }
   if (ageMin.value && ageMax.value) {
-    params['customer__customer_info__birth_date__lte'] = new Date(new Date().setFullYear(new Date().getFullYear() - ageMin.value)).toISOString().split('T')[0];
-    params['customer__customer_info__birth_date__gte'] = new Date(new Date().setFullYear(new Date().getFullYear() - ageMax.value - 1)).toISOString().split('T')[0];
+    params['age_min'] = ageMin.value;
+    params['age_max'] = ageMax.value;
   }
   if (selectedGenders.value.length) {
-    params['customer__customer_info__gender__in'] = selectedGenders.value.join(',');
+    params['gender'] = selectedGenders.value.join(',');
   }
   if (selectedBloodTypes.value.length) {
-    params['customer__customer_info__blood_type__in'] = selectedBloodTypes.value.join(',');
+    params['blood_type'] = selectedBloodTypes.value.join(',');
   }
   return params;
 });
@@ -282,7 +282,7 @@ const getWsUrl = (): string => {
   return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 };
 
-const loadLocations = async () => {
+const loadLocations = async (showLoader = true) => {
   if (
     (ageMin.value && !ageMax.value) ||
     (!ageMin.value && ageMax.value) ||
@@ -290,19 +290,27 @@ const loadLocations = async () => {
   ) {
     return;
   }
-  console.log("Loading locations with params:", filterParams.value);
-  const loader = loading.show({});
+  const loader = showLoader ? loading.show({}) : null;
   locations.value = (await uCustomer.getLastLocations(filterParams.value)) as any[];
-  loader.hide();
+  loader?.hide();
 };
 
-watch(filterParams, loadLocations, { deep: true });
+watch(filterParams, () => loadLocations(), { deep: true });
+
+let refreshInterval: ReturnType<typeof setInterval> | null = null;
 
 onMounted(async () => {
   companyCrud.list().then(resp => {
     companies.value = resp as any[];
   });
   await loadLocations();
+  refreshInterval = setInterval(() => loadLocations(false), 60000);
+});
+
+onUnmounted(() => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
 });
 
 </script>

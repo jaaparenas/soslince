@@ -35,7 +35,7 @@ class StaffInfoSerializer(BaseImageMixin, serializers.ModelSerializer):
             query = query.exclude(pk=staff_instance.pk)
 
         if query.exists():
-            raise serializers.ValidationError("This phone number is already in use.")
+            raise serializers.ValidationError("Este número de teléfono ya está en uso.")
 
         return value
 
@@ -59,7 +59,7 @@ class StaffSerializer(serializers.ModelSerializer):
             query = query.exclude(pk=self.instance.pk)
 
         if query.exists():
-            raise serializers.ValidationError("This email is already in use.")
+            raise serializers.ValidationError("Este correo electrónico ya está en uso.")
 
         return value
 
@@ -85,10 +85,11 @@ class StaffSerializer(serializers.ModelSerializer):
             validated_data.pop('is_superuser', None)
 
         password = validated_data.pop('password', None)
-        validated_data.pop('email', None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+
+        instance.username = instance.email
 
         if password:
             instance.set_password(password)

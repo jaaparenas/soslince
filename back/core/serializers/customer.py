@@ -38,7 +38,7 @@ class CustomerInfoSerializer(BaseImageMixin, serializers.ModelSerializer):
             query = query.exclude(pk=customer_instance.pk)
 
         if query.exists():
-            raise serializers.ValidationError("This phone number is already in use.")
+            raise serializers.ValidationError("Este número de teléfono ya está en uso.")
 
         return value
 
@@ -68,7 +68,7 @@ class CustomerSerializer(BaseImageMixin, serializers.ModelSerializer):
             query = query.exclude(pk=self.instance.pk)
 
         if query.exists():
-            raise serializers.ValidationError("This email is already in use.")
+            raise serializers.ValidationError("Este correo electrónico ya está en uso.")
             
         return value
 
@@ -90,10 +90,11 @@ class CustomerSerializer(BaseImageMixin, serializers.ModelSerializer):
         customer_data = validated_data.pop('customer', None)
 
         password = validated_data.pop('password', None)
-        validated_data.pop('email', None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+
+        instance.username = instance.email
 
         if password:
             instance.set_password(password)

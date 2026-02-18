@@ -134,26 +134,27 @@ class CustomerViewSet (viewsets.ModelViewSet):
 
         # Customer filters
         customer_filters = {}
-        company_ids_str = request.query_params.get('customer__company__in')
+        company_ids_str = request.query_params.get('company')
         if company_ids_str:
             customer_filters['customer__company__id__in'] = [int(x) for x in company_ids_str.split(',')]
-        
-        gender_ids_str = request.query_params.get('customer__customer_info__gender__in')
-        if gender_ids_str:
-            customer_filters['customer__gender__in'] = gender_ids_str.split(',')
-            
-        blood_type_ids_str = request.query_params.get('customer__customer_info__blood_type__in')
-        if blood_type_ids_str:
-            customer_filters['customer__blood_type__in'] = blood_type_ids_str.split(',')
-            
-        birth_date_gte_str = request.query_params.get('customer__customer_info__birth_date__gte')
-        if birth_date_gte_str:
-            customer_filters['customer__birth_date__gte'] = birth_date_gte_str
-            
-        birth_date_lte_str = request.query_params.get('customer__customer_info__birth_date__lte')
-        if birth_date_lte_str:
-            customer_filters['customer__birth_date__lte'] = birth_date_lte_str
-        
+
+        gender_str = request.query_params.get('gender')
+        if gender_str:
+            customer_filters['customer__gender__in'] = gender_str.split(',')
+
+        blood_type_str = request.query_params.get('blood_type')
+        if blood_type_str:
+            customer_filters['customer__blood_type__in'] = blood_type_str.split(',')
+
+        age_min = request.query_params.get('age_min')
+        age_max = request.query_params.get('age_max')
+        if age_min and age_max:
+            from dateutil.relativedelta import relativedelta
+            today = datetime.now().date()
+            # age_min -> birth_date upper bound, age_max -> birth_date lower bound
+            customer_filters['customer__birth_date__lte'] = today - relativedelta(years=int(age_min))
+            customer_filters['customer__birth_date__gte'] = today - relativedelta(years=int(age_max) + 1)
+
         if customer_filters:
             locations_qs = locations_qs.filter(**customer_filters)
 
@@ -166,16 +167,16 @@ class CustomerViewSet (viewsets.ModelViewSet):
                 Q(customer__phone__icontains=search_query)
             )
 
-        # Timestamp filter
-        timestamp_range_str = request.query_params.get('timestamp__range')
-        if timestamp_range_str:
+        # Date range filter
+        date_range_str = request.query_params.get('date_range')
+        if date_range_str:
             try:
-                start_date_str, end_date_str = timestamp_range_str.split(',')
+                start_date_str, end_date_str = date_range_str.split(',')
                 start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
                 end_date = datetime.fromisoformat(end_date_str.replace('Z', '+00:00'))
                 locations_qs = locations_qs.filter(timestamp__range=(start_date, end_date))
             except ValueError:
-                pass 
+                pass
 
         # 2. Use a window function to find the latest location for each customer within the filtered set
         locations_qs = locations_qs.annotate(
